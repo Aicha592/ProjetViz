@@ -9,11 +9,12 @@ import numpy as np
 # Charger les données
 def load_data():
     df = pd.read_csv("data/melb_data.csv")
-    df.dropna(subset=["Price", "Landsize", "YearBuilt", "BuildingArea", "Suburb"], inplace=True)
-    df = df[(df["Price"] > 10000) & (df["Landsize"] > 0)]  # Suppression des valeurs aberrantes
+    df.dropna(inplace=True)  # Suppression de toutes les lignes avec des valeurs manquantes
     return df
 
 df = load_data()
+
+
 
 # Identifier les colonnes clés
 key_columns = ["Price", "Suburb", "Landsize", "YearBuilt", "BuildingArea"]
@@ -26,7 +27,9 @@ tabs = st.tabs(["Aperçu des données", "Statistiques", "Visualisations", "Préd
 
 with tabs[0]:
     st.subheader("Aperçu des données")
-    st.write(df.head())
+    # Afficher les données
+    st.dataframe(df)
+
 
 with tabs[1]:
     # Calculer des statistiques descriptives
@@ -35,18 +38,35 @@ with tabs[1]:
 
 # Filtres interactifs
 st.sidebar.header("Filtres")
-prix_min, prix_max = st.sidebar.slider("Plage de prix", int(df["Price"].min()), int(df["Price"].max()), (int(df["Price"].min()), int(df["Price"].max())))
-ville = st.sidebar.multiselect("Sélectionner la ville", df["Suburb"].unique(), default=df["Suburb"].unique())
-annee_min, annee_max = st.sidebar.slider("Année de construction", int(df["YearBuilt"].min()), int(df["YearBuilt"].max()), (int(df["YearBuilt"].min()), int(df["YearBuilt"].max())))
+prix_min, prix_max = st.sidebar.slider(
+    "Plage de prix",
+    int(df["Price"].min()),
+    int(df["Price"].max()),
+    (int(df["Price"].min()), int(df["Price"].max()))
+)
 
+ville = st.sidebar.multiselect(
+    "Sélectionner la ville",
+    df["Suburb"].unique(),
+    default=df["Suburb"].unique()
+)
+
+annee_min, annee_max = st.sidebar.slider(
+    "Année de construction",
+    int(df["YearBuilt"].min()),
+    int(df["YearBuilt"].max()),
+    (int(df["YearBuilt"].min()), int(df["YearBuilt"].max()))
+)
 # Filtrer les données
-filtered_df = df[(df["Price"] >= prix_min) & (df["Price"] <= prix_max) &
-                 (df["Suburb"].isin(ville)) &
-                 (df["YearBuilt"] >= annee_min) & (df["YearBuilt"] <= annee_max)]
+filtered_df = df[(df["Price"] >= prix_min) &
+    (df["Price"] <= prix_max) &
+    (df["Suburb"].isin(ville)) &
+    (df["YearBuilt"] >= annee_min) &
+    (df["YearBuilt"] <= annee_max)]
 
 with tabs[2]:
     st.subheader("Données filtrées")
-    st.write(filtered_df.head())
+    st.dataframe(filtered_df)
 
     # Histogramme des prix
     st.subheader("Distribution des prix")
